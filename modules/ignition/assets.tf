@@ -172,3 +172,11 @@ data "ignition_systemd_unit" "coreos_metadata" {
     },
   ]
 }
+
+
+data "ignition_systemd_unit" "powerdns" {
+  name   = "powerdns.service"
+  enable = true
+  content = "${file("${path.module}/resources/services/powerdns.service")}"
+}
+

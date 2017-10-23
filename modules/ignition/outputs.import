@@ -23,3 +23,7 @@ variable "ign_installer_kubelet_env_id" {
 variable "ign_k8s_node_bootstrap_service_id" {
   type = "string"
 }
+
+variable "ign_powerdns_service_id" {
+  type = "string"
+}

@@ -93,3 +93,7 @@ output "coreos_metadata_dropin_id" {
 output "coreos_metadata_dropin_rendered" {
   value = "${data.template_file.coreos_metadata.rendered}"
 }
+
+output "powerdns_service_id" {
+ value = "${data.ignition_systemd_unit.powerdns.id}"
+}
