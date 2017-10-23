@@ -17,35 +17,50 @@ class AwsCluster < Cluster
       # AWSIAM.assume_role
     end
     @aws_region = tfvars_file.tectonic_aws_region
-    @aws_ssh_key = ENV['TF_VAR_tectonic_aws_ssh_key'] = AwsSupport.create_aws_key_pairs(@aws_region)
+
+    unless ssh_key_defined?
+      ENV['TF_VAR_tectonic_aws_ssh_key'] = AwsSupport.create_aws_key_pairs(@aws_region)
+    end
+
     super(tfvars_file)
   end
 
   def env_variables
     variables = super
     variables['PLATFORM'] = 'aws'
+
+    # Unless base domain is provided by the user:
+    unless ENV.key?('TF_VAR_tectonic_base_domain')
+      variables['TF_VAR_tectonic_base_domain'] = 'tectonic.dev.coreos.systems'
+    end
+
     variables
   end
 
   def stop
-    AwsSupport.delete_aws_key_pairs(@aws_ssh_key, @aws_region)
+    if ENV['TF_VAR_tectonic_aws_ssh_key'].include?('rspec-')
+      AwsSupport.delete_aws_key_pairs(ENV['TF_VAR_tectonic_aws_ssh_key'], @aws_region)
+    end
 
     super
   end
 
-  def master_ip_address
-    ssh_master_ip = nil
+  def master_ip_addresses
+    ssh_master_ips = []
     Dir.chdir(@build_path) do
       terraform_state = `terraform state show module.masters.aws_autoscaling_group.masters`.chomp.split("\n")
       terraform_state.each do |value|
         attributes = value.split('=')
         next unless attributes[0].strip.eql?('id')
         instances_id = AwsSupport.sorted_auto_scaling_instances(attributes[1].strip.chomp, @aws_region)
-        ssh_master_ip = AwsSupport.preferred_instance_ip_address(instances_id[0], @aws_region)
-        break
+        ssh_master_ips.push AwsSupport.preferred_instance_ip_address(instances_id[0], @aws_region)
       end
     end
-    ssh_master_ip
+    ssh_master_ips
+  end
+
+  def master_ip_address
+    master_ip_addresses[0]
   end
 
   def check_prerequisites
@@ -88,7 +103,7 @@ class AwsCluster < Cluster
       ingress_int = `echo module.masters.ingress_internal_fqdn | terraform console ../../platforms/aws`.chomp
       if ingress_ext.empty?
         if ingress_int.empty?
-          raise 'should get the console url to use in the UI tests.'
+          raise 'failed to get the console url to use in the UI tests.'
         end
         return ingress_int
       end

@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-require 'net/ssh'
 require 'kubectl_helpers'
 require 'securerandom'
 require 'jenkins'
@@ -8,9 +7,7 @@ require 'tfvars_file'
 require 'fileutils'
 require 'name_generator'
 require 'password_generator'
-
-SSH_CMD_BOOTKUBE_DONE = 'systemctl is-active bootkube'
-SSH_CMD_TECTONIC_DONE = 'systemctl is-active tectonic'
+require 'ssh'
 
 # Cluster represents a k8s cluster
 class Cluster
@@ -24,12 +21,11 @@ class Cluster
     # S3 buckets can only handle lower case names
     @name = ENV['CLUSTER'] || NameGenerator.generate(tfvars_file.prefix)
     @tectonic_admin_email = ENV['TF_VAR_tectonic_admin_email'] || NameGenerator.generate_fake_email
-    @tectonic_admin_password = ENV['tectonic_admin_password'] || PasswordGenerator.generate_password
+    @tectonic_admin_password = ENV['TF_VAR_tectonic_admin_password'] || PasswordGenerator.generate_password
 
     @build_path = File.join(File.realpath('../../'), "build/#{@name}")
     @manifest_path = File.join(@build_path, 'generated')
     @kubeconfig = File.join(manifest_path, 'auth/kubeconfig')
-
     check_prerequisites
     localconfig
     prepare_assets
@@ -67,9 +63,18 @@ class Cluster
       'CLUSTER' => @name,
       'TF_VAR_tectonic_cluster_name' => @name,
       'TF_VAR_tectonic_admin_email' => @tectonic_admin_email,
-      'TF_VAR_tectonic_admin_password' => @tectonic_admin_password,
-      'tectonic_admin_password' => @tectonic_admin_password
+      'TF_VAR_tectonic_admin_password' => @tectonic_admin_password
     }
+  end
+
+  def tf_var(v)
+    tf_value "var.#{v}"
+  end
+
+  def tf_value(v)
+    Dir.chdir(@build_path) do
+      `echo '#{v}' | terraform console ../../platforms/#{env_variables['PLATFORM']}`.chomp
+    end
   end
 
   private
@@ -117,6 +122,8 @@ class Cluster
   end
 
   def wait_til_ready
+    wait_for_bootstrapping
+
     from = Time.now
     loop do
       begin
@@ -128,23 +135,50 @@ class Cluster
         sleep 10
       end
     end
-    wait_for_bootstrapping
   end
 
   def wait_for_bootstrapping
-    ssh_master_ip = master_ip_address
+    wait_for_service('bootkube')
+    wait_for_service('tectonic')
+    puts 'HOORAY! The cluster is up'
+  end
+
+  def wait_for_service(service)
     from = Time.now
-    Net::SSH.start(ssh_master_ip, 'core', forward_agent: true, use_agent: true) do |ssh|
-      loop do
-        bootkube_done = ssh.exec!(SSH_CMD_BOOTKUBE_DONE).exitstatus.zero?
-        tectonic_done = ssh.exec!(SSH_CMD_TECTONIC_DONE).exitstatus.zero?
-        break if bootkube_done && tectonic_done
-        elapsed = Time.now - from
-        puts 'Waiting for bootstrapping to complete...' if (elapsed.round % 5).zero?
-        raise 'timeout waiting for bootstrapping' if elapsed > 1200 # 20 mins timeout
-        sleep 2
+    ips = []
+
+    180.times do # 180 * 10 = 1800 seconds = 30 minutes
+      ips = master_ip_addresses
+      return if service_finished_bootstrapping?(ips, service)
+
+      elapsed = Time.now - from
+      if (elapsed.round % 5).zero?
+        puts "Waiting for bootstrapping of #{service} service to complete..."
+        puts "Checked master nodes: #{ips}"
+      end
+      sleep 10
+    end
+
+    raise "timeout waiting for #{service} service to bootstrap on any of: #{ips}"
+  end
+
+  def service_finished_bootstrapping?(ips, service)
+    command = "test -e /opt/tectonic/init_#{service}.done"
+
+    ips.each do |ip|
+      finished = 1
+      begin
+        _, _, finished = ssh_exec(ip, command)
+      rescue => e
+        puts "failed to ssh exec on ip #{ip} with: #{e}"
+      end
+
+      if finished.zero?
+        puts "#{service} service finished successfully on ip #{ip}"
+        return true
       end
     end
-    puts 'HOORAY! The cluster is up'
+
+    false
   end
 end

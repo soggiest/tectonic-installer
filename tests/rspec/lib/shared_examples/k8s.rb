@@ -3,6 +3,7 @@
 require 'smoke_test'
 require 'forensic'
 require 'cluster_factory'
+require 'container_linux'
 require 'operators'
 require 'pages/login_page'
 require 'name_generator'
@@ -12,7 +13,12 @@ require 'webdriver_helpers'
 RSpec.shared_examples 'withRunningCluster' do |tf_vars_path|
   before(:all) do
     @cluster = ClusterFactory.from_tf_vars(TFVarsFile.new(tf_vars_path))
-    @cluster.start
+    begin
+      @cluster.start
+    rescue => e
+      Forensic.run(@cluster)
+      raise "Aborting execution due startup failed. Error: #{e}"
+    end
   end
 
   after(:each) do |example|
@@ -30,6 +36,16 @@ RSpec.shared_examples 'withRunningCluster' do |tf_vars_path|
 
   it 'succeeds with the golang test suit' do
     expect { SmokeTest.run(@cluster) }.to_not raise_error
+  end
+
+  it 'installs the correct Container Linux version' do
+    version = @cluster.tf_var('tectonic_container_linux_version')
+    version = @cluster.tf_value('module.container_linux.version') if version == 'latest'
+    expect(ContainerLinux.version(@cluster)).to eq(version)
+  end
+
+  it 'installs the correct Container Linux channel' do
+    expect(ContainerLinux.channel(@cluster)).to eq(@cluster.tf_var('tectonic_container_linux_channel'))
   end
 
   describe 'Interact with tectonic console' do

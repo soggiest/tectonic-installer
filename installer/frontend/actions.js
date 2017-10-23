@@ -1,11 +1,13 @@
 import _ from 'lodash';
 
 import { DEFAULT_CLUSTER_CONFIG } from './cluster-config';
+
 export const awsActionTypes = {
   SET: 'AWS_SET',
 };
 
 export const configActionTypes = {
+  ADD_IN: 'CONFIG_ACTION_ADD_IN',
   APPEND: 'CONFIG_ACTION_APPEND',
   REMOVE_AT: 'CONFIG_ACTION_REMOVE_AT',
   SET: 'CONFIG_ACTION_SIMPLE_SET',
@@ -39,16 +41,11 @@ export const restoreActionTypes = {
   RESTORE_STATE: 'RESTORE_RESTORE_STATE',
 };
 
-export const sequenceActionTypes = {
-  INCREMENT: 'SEQUENCE_INCREMENT',
-};
-
 export const serverActionTypes = {
   COMMIT_REQUESTED: 'COMMIT_REQUESTED',
   COMMIT_SENT: 'COMMIT_SENT',
   COMMIT_SUCCESSFUL: 'COMMIT_SUCCESSFUL',
   COMMIT_FAILED: 'COMMIT_FAILED',
-  COMMIT_RESET: 'COMMIT_RESET',
 };
 
 // Commit state machine
@@ -69,6 +66,8 @@ export const FORMS = {};
 
 // TODO (ggreer) standardize on order of params. is dispatch first or last?
 export const configActions = {
+  addIn: (path, value, dispatch) => dispatch({payload: {path, value}, type: configActionTypes.ADD_IN}),
+  set: (payload, dispatch) => dispatch({type: configActionTypes.SET, payload}),
   setIn: (path, value, dispatch) => dispatch({payload: {path, value}, type: configActionTypes.SET_IN}),
   batchSetIn: (dispatch, payload) => {
     const values = dispatch({payload, type: configActionTypes.BATCH_SET_IN});
@@ -82,21 +81,21 @@ export const configActions = {
   removeField: (fieldName, i) => (dispatch, getState) => {
     const field = FIELDS[fieldName];
     if (!field) {
-      throw new Error(`${fieldName} has no field for removing...`);
+      throw new Error(`${fieldName} has no field for removing`);
     }
     field.remove(dispatch, i, getState);
   },
   appendField: fieldName => (dispatch, getState) => {
     const field = FIELDS[fieldName];
     if (!field) {
-      throw new Error(`${fieldName} has no field for appending...`);
+      throw new Error(`${fieldName} has no field for appending`);
     }
     field.append(dispatch, getState);
   },
   refreshExtraData: fieldName => (dispatch, getState) => {
     const field = FIELDS[fieldName];
     if (!field) {
-      throw new Error(`${fieldName} has no field`);
+      throw new Error(`${fieldName} has no field for refreshing`);
     }
     field.getExtraStuff(dispatch, getState().clusterConfig, FIELDS, 0);
   },
@@ -104,7 +103,7 @@ export const configActions = {
     const [name, ...split] = fieldName.split('.');
     const field = FIELDS[name];
     if (!field) {
-      throw new Error(`${name} has no field`);
+      throw new Error(`${name} has no field for updating`);
     }
 
     return field.update(dispatch, inputValue, getState, FIELDS, FIELD_TO_DEPS, split);

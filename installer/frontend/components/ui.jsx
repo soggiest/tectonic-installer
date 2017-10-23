@@ -177,12 +177,21 @@ const makeBooleanField = type => {
 // Handles error displays and boilerplate attributes.
 // <Input id:REQUIRED invalid="error message" placeholder value onValue />
 export const Input = props => <Field tag="input" type="text" {...props}>{props.children}</Field>;
+
+// If props.validator is specified, use it to override any existing props.invalid error
+export const CIDR = props => props.validator
+  ? <Input {...props} invalid={props.validator(props.value)} />
+  : <Input {...props} />;
+
 export const NumberInput = props => <Field tag="input" type="number" onChange={e => {
   const number = parseInt(e.target.value, 10);
   props.onValue(isNaN(number) ? 0 : number);
 }} {...props} />;
+
 export const Password = props => <Field tag="input" type="password" {...props} />;
+
 export const RadioBoolean = makeBooleanField('radio');
+
 export const Radio = props => {
   const renderField = (injectedProps, cleanedProps, classes) => {
     return <input type="radio" className={classes} {...cleanedProps}
@@ -197,7 +206,9 @@ export const Radio = props => {
   };
   return <Field {...props} renderField={renderField} />;
 };
+
 export const CheckBox = makeBooleanField('checkbox');
+
 export const ToggleButton = props => <button className={props.className} style={props.style} onClick={() => props.onValue(!props.value)}>
   {props.value ? 'Hide' : 'Show'}&nbsp;{props.children}
   <i style={{marginLeft: 7}} className={classNames('fa', {'fa-chevron-up': props.value, 'fa-chevron-down': !props.value})}></i>
@@ -335,7 +346,7 @@ const stateToProps = ({clusterConfig, dirty}, {field}) => ({
 });
 
 const dispatchToProps = (dispatch, {field}) => ({
-  setField: (path, value, invalid) => dispatch(configActions.updateField(path, value, invalid)),
+  updateField: (path, value, invalid) => dispatch(configActions.updateField(path, value, invalid)),
   makeDirty: () => markIDDirty(dispatch, field),
   makeClean: () => dispatch({type: dirtyActionTypes.CLEAN, payload: field }),
   refreshExtraData: () => dispatch(configActions.refreshExtraData(field)),
@@ -345,10 +356,10 @@ const dispatchToProps = (dispatch, {field}) => ({
 
 class Connect_ extends React.Component {
   handleValue (v) {
-    const { children, field, setField } = this.props;
+    const { children, field, updateField } = this.props;
     const child = React.Children.only(children);
 
-    setField(field, v);
+    updateField(field, v);
     if (child.props.onValue) {
       child.props.onValue(v);
     }
@@ -557,19 +568,15 @@ const stateToIsDeselected = ({clusterConfig}, {field}) => {
 
 export const Deselect = connect(
   stateToIsDeselected,
-  dispatch => ({
-    setField: (k, v) => {
-      dispatch({
-        type: configActionTypes.SET_IN,
-        payload: {value: v, path: k},
-      });
-    },
-  })
+  dispatch => ({setField: (k, v) => configActions.setIn(k, v, dispatch)})
 )(({field, isDeselected, setField}) => <span className="deselect">
   <CheckBox id={field} value={!isDeselected} onValue={v => setField(field, !v)} />
 </span>);
 
-export const DeselectField = connect(stateToIsDeselected)(({children, isDeselected}) => React.cloneElement(React.Children.only(children), {disabled: isDeselected, selectable: true}));
+export const DeselectField = connect(stateToIsDeselected)(({children, isDeselected}) => React.cloneElement(
+  React.Children.only(children),
+  {disabled: isDeselected, selectable: true}
+));
 
 const certPlaceholder = `Paste your certificate here. It should start with:
 
@@ -579,15 +586,12 @@ It should end with:
 
 -----END CERTIFICATE-----`;
 
-export const CertArea = (props) => {
-  const invalid = validate.certificate(props.value);
-  const areaProps = Object.assign({}, props, {
-    className: props.className + ' wiz-tls-asset-field',
-    invalid: invalid,
-    placeholder: certPlaceholder,
-  });
-  return <FileArea {...areaProps} />;
-};
+export const CertArea = (props) => <FileArea
+  {...props}
+  className="wiz-tls-asset-field"
+  invalid={validate.certificate(props.value)}
+  placeholder={certPlaceholder}
+/>;
 
 const privateKeyPlaceholder = `Paste your private key here. It should start with:
 
@@ -597,15 +601,12 @@ It should end with:
 
 -----END RSA PRIVATE KEY-----`;
 
-export const PrivateKeyArea = (props) => {
-  const invalid = validate.privateKey(props.value);
-  const areaProps = Object.assign({}, props, {
-    className: props.className + ' wiz-tls-asset-field',
-    invalid: invalid,
-    placeholder: privateKeyPlaceholder,
-  });
-  return <FileArea {...areaProps} />;
-};
+export const PrivateKeyArea = (props) => <FileArea
+  {...props}
+  className="wiz-tls-asset-field"
+  invalid={validate.privateKey(props.value)}
+  placeholder={privateKeyPlaceholder}
+/>;
 
 export class AsyncSelect extends React.Component {
   componentDidMount () {
@@ -704,7 +705,6 @@ export const ConnectedFieldList = connect(
   (dispatch) => ({removeField: (id, i) => dispatch(configActions.removeField(id, i))})
 )((props) => <InnerFieldList_ {...props} />);
 
-
 export class DropdownMixin extends React.PureComponent {
   constructor(props) {
     super(props);
@@ -753,20 +753,18 @@ export class Dropdown extends DropdownMixin {
     const {active} = this.state;
     const {items, header} = this.props;
 
-    const children = _.map(items, (href, key) => {
-      return <li className="tectonic-dropdown-menu-item" key={key}>
-        <a className="tectonic-dropdown-menu-item__link" href={href} key={key} rel="noopener" target="_blank">
-          {key}
-        </a>
+    const children = _.map(items, (href, title) => {
+      return <li className="tectonic-dropdown-menu-item" key={title}>
+        <a className="tectonic-dropdown-menu-item__link" href={href} rel="noopener" target="_blank">{title}</a>
       </li>;
     });
 
     return (
-      <div ref={el => this.dropdownElement = el}>
-        <div className="dropdown" onClick={this.toggle}>
-          <a className="tectonic-dropdown-menu-title">{header}&nbsp;&nbsp;<i className="fa fa-angle-down" aria-hidden="true"></i></a>
-          <ul className="dropdown-menu tectonic-dropdown-menu" style={{display: active ? 'block' : 'none'}}>{children}</ul>
-        </div>
+      <div ref={el => this.dropdownElement = el} className="dropdown" onClick={this.toggle}>
+        <a className="tectonic-dropdown-menu-title">{header}&nbsp;&nbsp;<i className="fa fa-angle-down"></i></a>
+        <ul className="dropdown-menu tectonic-dropdown-menu" style={{display: active ? 'block' : 'none'}}>
+          {children}
+        </ul>
       </div>
     );
   }

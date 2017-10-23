@@ -18,15 +18,14 @@ class TFVarsFile
     data['tectonic_experimental'] == 'true'
   end
 
-  def calico?
-    data['tectonic_calico_network_policy'] == 'true'
+  def networking
+    data['tectonic_networking']
   end
 
   def node_count
     master_count + worker_count
   end
 
-  # TODO: Randomize region on AWS
   def region
     data['tectonic_aws_region']
   end

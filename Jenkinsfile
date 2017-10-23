@@ -82,6 +82,7 @@ pipeline {
       }
       steps {
         node('worker && ec2') {
+          forcefullyCleanWorkspace()
           withDockerContainer(params.builder_image) {
             ansiColor('xterm') {
               checkout scm
@@ -128,6 +129,7 @@ pipeline {
         parallel (
           "IntegrationTest AWS Installer Gui": {
             node('worker && ec2') {
+              forcefullyCleanWorkspace()
               withCredentials(creds) {
                 withDockerContainer(params.builder_image) {
                   ansiColor('xterm') {
@@ -145,6 +147,7 @@ pipeline {
           },
           "IntegrationTest Baremetal Installer Gui": {
             node('worker && ec2') {
+              forcefullyCleanWorkspace()
               withCredentials(creds) {
                 withDockerContainer(image: params.builder_image, args: '-u root') {
                   ansiColor('xterm') {
@@ -198,7 +201,7 @@ pipeline {
                 'spec/aws_vpc_internal_spec.rb',
                 '--device=/dev/net/tun --cap-add=NET_ADMIN -u root'
                 )
-            builds['aws_network_policy'] = runRSpecTest('spec/aws_network_policy_spec.rb', '')
+            builds['aws_canal'] = runRSpecTest('spec/aws_network_canal_spec.rb', '')
             builds['aws_exp'] = runRSpecTest('spec/aws_exp_spec.rb', '')
             builds['aws_ca'] = runRSpecTest('spec/aws_ca_spec.rb', '')
           }
@@ -217,25 +220,26 @@ pipeline {
           }
 
           if (params."PLATFORM/BARE_METAL") {
-            /* Temporarily disabled for consolidation
-            * Fails very often due to Packet flakiness
-            *
             builds['bare_metal'] = {
               node('worker && bare-metal') {
                 ansiColor('xterm') {
                   unstash 'repository'
                   withCredentials(creds) {
-                    timeout(35) {
                       sh """#!/bin/bash -ex
-                      ${WORKSPACE}/tests/smoke/bare-metal/smoke.sh vars/metal.tfvars
+                      cd tests/rspec
+                      export RBENV_ROOT=/usr/local/rbenv
+                      export PATH="/usr/local/rbenv/bin:$PATH"
+                      eval \"\$(rbenv init -)\"
+                      rbenv install -s
+                      gem install bundler
+                      bundler install
+                      bundler exec rspec spec/metal_basic_spec.rb
                       """
-                    }
                     cleanWs notFailBuild: true
                   }
                 }
               }
             }
-            */
           }
 
           parallel builds
@@ -249,6 +253,7 @@ pipeline {
       }
       steps {
         node('worker && ec2') {
+          forcefullyCleanWorkspace()
           withCredentials(quay_creds) {
             ansiColor('xterm') {
               unstash 'repository'
@@ -267,10 +272,26 @@ pipeline {
   }
 }
 
+def forcefullyCleanWorkspace() {
+  return withDockerContainer(
+    image: tectonic_smoke_test_env_image,
+    args: '-u root'
+  ) {
+    ansiColor('xterm') {
+      sh """#!/bin/bash -ex
+        if [ -d "\$WORKSPACE" ]
+        then
+          rm -rfv \$WORKSPACE/*
+        fi
+      """
+    }
+  }
+}
 
 def runRSpecTest(testFilePath, dockerArgs) {
   return {
     node('worker && ec2') {
+      forcefullyCleanWorkspace()
       withCredentials(creds) {
         withDockerContainer(
             image: tectonic_smoke_test_env_image,

@@ -2,9 +2,7 @@ import _ from 'lodash';
 import { combineReducers } from 'redux';
 import { fromJS } from 'immutable';
 
-import {
-  DEFAULT_CLUSTER_CONFIG,
-} from './cluster-config';
+import { DEFAULT_CLUSTER_CONFIG } from './cluster-config';
 
 import {
   awsActionTypes,
@@ -15,7 +13,6 @@ import {
   loadFactsActionTypes,
   restoreActionTypes,
   serverActionTypes,
-  sequenceActionTypes,
   commitPhases,
 } from './actions';
 
@@ -81,16 +78,6 @@ const reducersTogether = combineReducers({
         phase: commitPhases.FAILED,
         response: action.payload,
       };
-    case serverActionTypes.COMMIT_RESET:
-      if (state.phase !== commitPhases.SUCCEEDED &&
-          state.phase !== commitPhases.FAILED &&
-          state.phase !== commitPhases.IDLE) {
-        throw Error('attempt to reset a working server connection');
-      }
-
-      return {
-        phase: commitPhases.IDLE,
-      };
     default:
       return state;
     }
@@ -141,6 +128,13 @@ const reducersTogether = combineReducers({
       });
       return object.toJS();
     }
+
+    // Adds a value at a given path or no-op if a value already for the path
+    case configActionTypes.ADD_IN:
+      return _.isEmpty(_.get(state, action.payload.path))
+        ? setIn(state, action.payload.path, action.payload.value)
+        : state;
+
     case configActionTypes.SET_IN:
       return setIn(state, action.payload.path, action.payload.value);
 
@@ -299,20 +293,6 @@ const reducersTogether = combineReducers({
       return state;
     }
   },
-
-  // A value guaranteed to monotonically increase. Should be saved/restored.
-  sequence: (state, action) => {
-    if (state === undefined) {
-      return 0;
-    }
-
-    switch (action.type) {
-    case sequenceActionTypes.INCREMENT:
-      return state + 1;
-    default:
-      return state;
-    }
-  },
 });
 
 function filterClusterConfig(cc = {}) {
@@ -371,6 +351,6 @@ export const reducer = (state, action) => {
 
 // Preserves only the savable bits of state
 export const savable = (state) => {
-  const {dirty, clusterConfig, sequence} = state;
-  return {dirty, clusterConfig, sequence};
+  const {dirty, clusterConfig} = state;
+  return {dirty, clusterConfig};
 };
