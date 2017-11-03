@@ -305,3 +305,9 @@ Example:
  * `["ingress-nginx"]`
 EOF
 }
+
+variable "external_dns" {
+  type    = "string"
+  default = "false"
+}
+

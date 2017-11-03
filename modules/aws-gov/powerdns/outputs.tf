@@ -1,13 +1,12 @@
 output "server_ip" {
-  value = "${aws_instance.powerdns_node.*.private_ip[0]}"
+  value = "${var.external_dns == "true" ? aws_instance.powerdns_node.*.public_ip[0] : aws_instance.powerdns_node.*.private_ip[0]}" 
 }
 
 data "template_file" "server_url" {
   template = "http://$${server_ip}:8081"
   
   vars {
-    server_ip = "${aws_instance.powerdns_node.*.private_ip[0]}"
-    # server_ip = "127.0.0.1"
+    server_ip = "${var.external_dns == "true" ? aws_instance.powerdns_node.*.public_ip[0] : aws_instance.powerdns_node.*.private_ip[0]}"
   }
 }
 

@@ -31,3 +31,7 @@ output "api_sg_id" {
 output "console_sg_id" {
   value = "${aws_security_group.console.id}"
 }
+
+output "powerdns_sg_id" {
+  value = "${aws_security_group.powerdns.id}"
+}

@@ -92,3 +92,7 @@ variable "worker_iam_role" {
   description = "IAM role to use for the instance profiles of worker nodes."
 }
 
+variable "external_dns" {
+  type        = "string"
+}
+

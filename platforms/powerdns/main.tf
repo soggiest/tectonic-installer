@@ -60,8 +60,8 @@ module "dns" {
   cluster_id         = "test1"
   cluster_name       = "${var.tectonic_cluster_name}"
   container_image    = "${var.tectonic_container_images["etcd"]}"
-#  dns_enabled        = "${!var.tectonic_experimental && length(compact(var.tectonic_etcd_servers)) ==     0}"
-#  dns_zone_id        = "${var.tectonic_aws_private_endpoints ? data.null_data_source.zones.inputs["pri    vate"] : data.null_data_source.zones.inputs["public"]}"
+#  dns_enabled        = "${!var.tectonic_experimental && length(compact(var.tectonic_etcd_servers)) == 0}"
+#  dns_zone_id        = "${var.tectonic_aws_private_endpoints ? data.null_data_source.zones.inputs["private"] : data.null_data_source.zones.inputs["public"]}"
   ec2_type           = "${var.tectonic_aws_worker_ec2_type}"
  # external_endpoints = "${compact(var.tectonic_etcd_servers)}"
   extra_tags         = "${var.tectonic_aws_extra_tags}"
@@ -69,8 +69,9 @@ module "dns" {
   root_volume_iops   = "${var.tectonic_aws_worker_root_volume_iops}"
   root_volume_size   = "${var.tectonic_aws_worker_root_volume_size}"
   root_volume_type   = "${var.tectonic_aws_worker_root_volume_type}"
-  sg_ids             = "${concat(var.tectonic_aws_worker_extra_sg_ids, list(module.vpc.worker_sg_id))}"
+  sg_ids             = "${concat(var.tectonic_aws_worker_extra_sg_ids, list(module.vpc.powerdns_sg_id))}"
   ssh_key            = "${var.tectonic_aws_ssh_key}"
-  subnets            = "${module.vpc.worker_subnet_ids}"
+  subnets            = "${module.vpc.master_subnet_ids}"
+  external_dns       = "${var.external_dns}"
 }
 

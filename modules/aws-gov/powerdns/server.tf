@@ -26,11 +26,12 @@ resource "aws_instance" "powerdns_node" {
   count = "1"
   ami   = "${data.aws_ami.coreos_ami.image_id}"
 
-  instance_type          = "${var.ec2_type}"
-  subnet_id              = "${element(var.subnets, count.index)}"
-  key_name               = "${var.ssh_key}"
-  user_data              = "${data.ignition_config.powerdns.rendered}"
-  vpc_security_group_ids = ["${var.sg_ids}"]
+  instance_type               = "${var.ec2_type}"
+  subnet_id                   = "${element(var.subnets, count.index)}"
+  key_name                    = "${var.ssh_key}"
+  user_data                   = "${data.ignition_config.powerdns.rendered}"
+  associate_public_ip_address = "${var.external_dns == "true" ? true : false }"
+  vpc_security_group_ids      = ["${var.sg_ids}"]
 
   lifecycle {
     # Ignore changes in the AMI which force recreation of the resource. This
@@ -48,7 +49,7 @@ resource "aws_instance" "powerdns_node" {
   root_block_device {
     volume_type = "${var.root_volume_type}"
     volume_size = "${var.root_volume_size}"
-    iops        = "${var.root_volume_type == "io1" ? var.root_volume_iops : var.root_volume_type == "g    p2" ? min(10000, max(100, 3 * var.root_volume_size)) : 0}"
+    iops        = "${var.root_volume_type == "io1" ? var.root_volume_iops : var.root_volume_type == "gp2" ? min(10000, max(100, 3 * var.root_volume_size)) : 0}"
   }
 
   volume_tags = "${merge(map(
