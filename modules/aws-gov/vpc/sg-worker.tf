@@ -58,6 +58,26 @@ resource "aws_security_group_rule" "worker_ingress_https" {
   to_port     = 443
 }
 
+resource "aws_security_group_rule" "worker_ingress_api" {
+  type              = "ingress"
+  security_group_id = "${aws_security_group.worker.id}"
+
+  protocol    = "tcp"
+  cidr_blocks = ["0.0.0.0/0"]
+  from_port   = 8081
+  to_port     = 8081
+}
+resource "aws_security_group_rule" "worker_ingress_dns" {
+  type              = "ingress"
+  security_group_id = "${aws_security_group.worker.id}"
+
+  protocol    = "tcp"
+  cidr_blocks = ["0.0.0.0/0"]
+  from_port   = 53
+  to_port     = 53
+}
+
+
 resource "aws_security_group_rule" "worker_ingress_heapster" {
   type              = "ingress"
   security_group_id = "${aws_security_group.worker.id}"
