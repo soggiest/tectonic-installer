@@ -1,0 +1,14 @@
+[Unit]
+Description=Runs the PowerDNS Service
+
+[Service]
+Type=oneshot
+RemainAfterExit=true
+WorkingDirectory=/opt
+
+User=root
+Group=root
+
+ExecStartPre=/usr/bin/bash su -c 'docker pull secns/pdns:3.4.6'
+ExecStartPre=/usr/bin/bash su -c 'docker pull mysql'
+ExecStart=/usr/bin/bash /usr/bin/docker run --name pdns-master --link mysql:db -d -p 53:53/udp -p 53:53 -p 8080:80 secns/pdns:3.4.6
