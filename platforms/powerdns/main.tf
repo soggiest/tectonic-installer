@@ -7,7 +7,7 @@ provider "aws" {
 data "aws_availability_zones" "azs" {}
 
 module "vpc" {
-  source = "../../../modules/aws-gov/vpc"
+  source = "../../modules/aws-gov/vpc"
 
   cidr_block   = "${var.tectonic_aws_vpc_cidr_block}"
   base_domain  = "${var.tectonic_base_domain}"
@@ -54,7 +54,7 @@ module "vpc" {
 }
 
 module "dns" {
-  source = "../../../modules/aws-gov/powerdns"
+  source = "../../modules/aws-gov/powerdns"
   base_domain        = "${var.tectonic_base_domain}"
   cl_channel         = "${var.tectonic_cl_channel}"
   cluster_id         = "test1"
