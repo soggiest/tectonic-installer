@@ -4,7 +4,7 @@ resource "aws_vpc" "new_vpc" {
   count                = "${var.external_vpc_id == "" ? 1 : 0}"
   cidr_block           = "${var.cidr_block}"
   enable_dns_hostnames = true
-  enable_dns_support   = true
+  enable_dns_support   = false
 
   tags = "${merge(map(
       "Name", "${var.cluster_name}.${var.base_domain}",

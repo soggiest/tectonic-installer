@@ -71,7 +71,7 @@ resource "aws_eip" "nat_eip" {
 }
 
 resource "aws_nat_gateway" "nat_gw" {
-  count         = "${var.external_vpc_id == "" ? min(var.master_az_count, var.worker_az_count) : 0}"
+  count         = "0"
   allocation_id = "${aws_eip.nat_eip.*.id[count.index]}"
   subnet_id     = "${aws_subnet.master_subnet.*.id[count.index]}"
 }
