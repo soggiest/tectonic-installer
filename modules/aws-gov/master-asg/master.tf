@@ -18,7 +18,7 @@ data "aws_ami" "coreos_ami" {
 
   filter {
     name   = "owner-id"
-    values = ["595879546273"]
+    values = ["190570271432"]
   }
 }
 
@@ -156,7 +156,7 @@ resource "aws_iam_role_policy" "master_policy" {
         "s3:HeadObject",
         "s3:ListBucket"
       ],
-      "Resource": "arn:aws:s3:::*",
+      "Resource": "arn:aws-us-gov:s3:::*",
       "Effect": "Allow"
     },
     {

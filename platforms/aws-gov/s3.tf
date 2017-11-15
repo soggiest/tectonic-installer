@@ -10,11 +10,11 @@ resource "aws_s3_bucket" "tectonic" {
 
   acl = "private"
 
-  tags = "${merge(map(
-      "Name", "${var.tectonic_cluster_name}-tectonic",
-      "KubernetesCluster", "${var.tectonic_cluster_name}",
-      "tectonicClusterID", "${module.tectonic.cluster_id}"
-    ), var.tectonic_aws_extra_tags)}"
+#  tags = "${merge(map(
+#      "Name", "${var.tectonic_cluster_name}-tectonic",
+#      "KubernetesCluster", "${var.tectonic_cluster_name}",
+#      "tectonicClusterID", "${module.tectonic.cluster_id}"
+#    ), var.tectonic_aws_extra_tags)}"
 }
 
 # Bootkube / Tectonic assets
@@ -29,11 +29,11 @@ resource "aws_s3_bucket_object" "tectonic_assets" {
   # client-side encryption.
   server_side_encryption = "AES256"
 
-  tags = "${merge(map(
-      "Name", "${var.tectonic_cluster_name}-tectonic-assets",
-      "KubernetesCluster", "${var.tectonic_cluster_name}",
-      "tectonicClusterID", "${module.tectonic.cluster_id}"
-    ), var.tectonic_aws_extra_tags)}"
+#  tags = "${merge(map(
+#      "Name", "${var.tectonic_cluster_name}-tectonic-assets",
+#      "KubernetesCluster", "${var.tectonic_cluster_name}",
+#      "tectonicClusterID", "${module.tectonic.cluster_id}"
+#    ), var.tectonic_aws_extra_tags)}"
 }
 
 # kubeconfig
@@ -49,9 +49,9 @@ resource "aws_s3_bucket_object" "kubeconfig" {
   # to KMS.
   server_side_encryption = "AES256"
 
-  tags = "${merge(map(
-      "Name", "${var.tectonic_cluster_name}-kubeconfig",
-      "KubernetesCluster", "${var.tectonic_cluster_name}",
-      "tectonicClusterID", "${module.tectonic.cluster_id}"
-    ), var.tectonic_aws_extra_tags)}"
+#  tags = "${merge(map(
+#      "Name", "${var.tectonic_cluster_name}-kubeconfig",
+#      "KubernetesCluster", "${var.tectonic_cluster_name}",
+#      "tectonicClusterID", "${module.tectonic.cluster_id}"
+#    ), var.tectonic_aws_extra_tags)}"
 }

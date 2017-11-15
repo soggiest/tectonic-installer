@@ -56,4 +56,15 @@ resource "aws_instance" "powerdns_node" {
     "kubernetes.io/cluster/${var.cluster_name}", "owned",
     "tectonicClusterID", "${var.cluster_id}"
   ), var.extra_tags)}"
+
+#  provisioner "file" {
+#    source = "resources/pdns-4.0-1.tar.gz"
+#    destination = "/tmp/pdns-4.0-1.tar.gz"
+#  }
+#
+#  provisioner "file" {
+#    source = "resources/mysql.tar.gz"
+#    destination = "/tmp/mysql.tar.gz"
+#  }
+
 }

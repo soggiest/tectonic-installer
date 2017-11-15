@@ -11,6 +11,7 @@ data "ignition_config" "powerdns" {
   ]
 }
 
+
 data "ignition_file" "node_hostname" {
   path       = "/etc/hostname"
   mode       = 0644
@@ -52,6 +53,8 @@ RemainAfterExit=true
 User=root
 Group=root
 
+#ExecStartPre=/usr/bin/docker load --input /tmp/pdns-4.0-1.tar.gz
+#ExecStartPre=/usr/bin/docker load --input /tmp/mysql.tar.gz
 ExecStartPre=/usr/bin/docker pull quay.io/nicholas_lane/pdns:4.0-1
 ExecStartPre=/usr/bin/docker pull mysql
 ExecStartPre=/usr/bin/docker run -d --name=mysql -e MYSQL_ROOT_PASSWORD=changeme mysql

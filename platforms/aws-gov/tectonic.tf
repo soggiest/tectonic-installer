@@ -4,7 +4,8 @@ module "kube_certs" {
   ca_cert_pem        = "${var.tectonic_ca_cert}"
   ca_key_alg         = "${var.tectonic_ca_key_alg}"
   ca_key_pem         = "${var.tectonic_ca_key}"
-  kube_apiserver_url = "https://${module.masters.api_internal_fqdn}:443"
+#  kube_apiserver_url = "https://${module.masters.api_internal_fqdn}:443"
+  kube_apiserver_url = "https://${var.tectonic_aws_private_endpoints ? module.masters.api_internal_fqdn : module.masters.api_external_fqdn}:443"
   service_cidr       = "${var.tectonic_service_cidr}"
 }
 
@@ -30,8 +31,9 @@ module "etcd_certs" {
 
 module "ingress_certs" {
   source = "../../modules/tls/ingress/self-signed"
+  base_address  = "https://${var.tectonic_aws_private_endpoints ? module.masters.ingress_internal_fqdn : module.masters.ingress_external_fqdn}:443"
 
-  base_address = "${module.masters.ingress_internal_fqdn}"
+  #base_address = "${module.masters.ingress_internal_fqdn}"
   ca_cert_pem  = "${module.kube_certs.ca_cert_pem}"
   ca_key_alg   = "${module.kube_certs.ca_key_alg}"
   ca_key_pem   = "${module.kube_certs.ca_key_pem}"

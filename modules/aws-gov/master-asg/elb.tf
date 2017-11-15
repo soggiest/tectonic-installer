@@ -130,7 +130,7 @@ resource "powerdns_record" "ingress_public" {
 }
 
 resource "powerdns_record" "ingress_private" {
-  count   = "${var.private_endpoints}"
+  count   = "${var.private_endpoints}" 
   zone    = "${var.base_domain}"
   name    = "${var.custom_dns_name == "" ? var.cluster_name : var.custom_dns_name}.${var.base_domain}."
   type    = "ALIAS"

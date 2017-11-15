@@ -41,4 +41,3 @@ output "nameserver_ip" {
 output "nameserver_url" {
   value = "${module.dns.server_url}"
 }
-

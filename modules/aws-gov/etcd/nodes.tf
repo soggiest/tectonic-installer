@@ -18,7 +18,7 @@ data "aws_ami" "coreos_ami" {
 
   filter {
     name   = "owner-id"
-    values = ["595879546273"]
+    values = ["190570271432"]
   }
 }
 
