@@ -31,9 +31,9 @@ module "etcd_certs" {
 
 module "ingress_certs" {
   source = "../../modules/tls/ingress/self-signed"
-  base_address  = "https://${var.tectonic_aws_private_endpoints ? module.masters.ingress_internal_fqdn : module.masters.ingress_external_fqdn}:443"
+  base_address  = "${var.tectonic_aws_private_endpoints ? module.masters.ingress_internal_fqdn : module.masters.ingress_external_fqdn}:443"
 
-  #base_address = "${module.masters.ingress_internal_fqdn}"
+ # base_address = "${module.masters.ingress_internal_fqdn}"
   ca_cert_pem  = "${module.kube_certs.ca_cert_pem}"
   ca_key_alg   = "${module.kube_certs.ca_key_alg}"
   ca_key_pem   = "${module.kube_certs.ca_key_pem}"
@@ -53,7 +53,7 @@ module "bootkube" {
 
   cluster_name = "${var.tectonic_cluster_name}"
 
-  kube_apiserver_url = "https://${var.tectonic_aws_private_endpoints ? module.masters.api_internal_fqdn : module.masters.api_external_fqdn}:443"
+  kube_apiserver_url = "https://${var.tectonic_aws_private_endpoints ? module.masters.api_internal_fqdn : module.masters.api_external_fqdn}"
   oidc_issuer_url    = "https://${var.tectonic_aws_private_endpoints ? module.masters.ingress_internal_fqdn : module.masters.ingress_external_fqdn}/identity"
 
   # Platform-independent variables wiring, do not modify.
@@ -117,7 +117,7 @@ module "tectonic" {
 
   cluster_name = "${var.tectonic_cluster_name}"
 
-  base_address       = "${var.tectonic_aws_private_endpoints ? module.masters.ingress_internal_fqdn : module.masters.ingress_external_fqdn}"
+  base_address       = "${var.tectonic_aws_private_endpoints ? module.masters.ingress_internal_fqdn : module.masters.ingress_external_fqdn}:443"
   kube_apiserver_url = "https://${var.tectonic_aws_private_endpoints ? module.masters.api_internal_fqdn : module.masters.api_external_fqdn}:443"
 
   # Platform-independent variables wiring, do not modify.
