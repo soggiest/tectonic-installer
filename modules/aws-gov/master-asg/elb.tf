@@ -34,7 +34,7 @@ resource "aws_elb" "api_internal" {
 resource "powerdns_record" "api_internal" {
   count   = "${var.private_endpoints}"
   zone    = "${var.base_domain}"
-  name    = "${var.custom_dns_name == "" ? var.cluster_name : var.custom_dns_name}-api.${var.base_domain}."
+  name    = "${var.custom_dns_name == "" ? var.cluster_name : var.custom_dns_name}-api."
   ttl     = 60
   type    = "ALIAS"
 

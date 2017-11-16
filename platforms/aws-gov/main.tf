@@ -32,6 +32,8 @@ module "etcd" {
 
   subnets = "${data.terraform_remote_state.powerdns.worker_subnet_ids}"
 
+  nameserver_ip                = "${data.terraform_remote_state.powerdns.nameserver_ip}"
+
 # dns_zone_id  = "${var.tectonic_aws_private_endpoints ? data.null_data_source.zones.inputs["private"] : data.null_data_source.zones.inputs["public"]}"
   base_domain  = "${var.tectonic_base_domain}"
   cluster_name = "${var.tectonic_cluster_name}"

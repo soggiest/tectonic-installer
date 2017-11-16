@@ -29,7 +29,9 @@ resource "aws_instance" "etcd_node" {
   instance_type          = "${var.ec2_type}"
   subnet_id              = "${element(var.subnets, count.index)}"
   key_name               = "${var.ssh_key}"
+  associate_public_ip_address = true
   user_data              = "${data.ignition_config.etcd.*.rendered[count.index]}"
+  
   vpc_security_group_ids = ["${var.sg_ids}"]
 
   lifecycle {

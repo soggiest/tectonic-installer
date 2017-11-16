@@ -83,3 +83,7 @@ variable "tls_enabled" {
 variable "tls_zip" {
   type = "string"
 }
+
+variable "nameserver_ip" {
+  type = "string"
+}

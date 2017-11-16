@@ -10,7 +10,22 @@ data "ignition_config" "etcd" {
   files = [
     "${data.ignition_file.node_hostname.*.id[count.index]}",
     "${data.ignition_file.etcd_tls_zip.id}",
+    "${data.ignition_file.node_resolv.id}",
   ]
+}
+
+data "template_file" "node_resolv" {
+  template = "nameserver ${var.nameserver_ip}"
+}
+
+data "ignition_file" "node_resolv" {
+  path       = "/etc/resolv.conf"
+  mode       = 0644
+  filesystem = "root"
+
+  content {
+    content = "${data.template_file.node_resolv.rendered}"
+  }
 }
 
 data "ignition_file" "node_hostname" {

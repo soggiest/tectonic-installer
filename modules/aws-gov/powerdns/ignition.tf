@@ -58,7 +58,7 @@ Group=root
 ExecStartPre=/usr/bin/docker pull quay.io/nicholas_lane/pdns:4.0-1
 ExecStartPre=/usr/bin/docker pull mysql
 ExecStartPre=/usr/bin/docker run -d --name=mysql -e MYSQL_ROOT_PASSWORD=changeme mysql
-ExecStart=/usr/bin/docker run --name pdns-master --link mysql:db -p 53:53/udp -p 53:53 -p 8081:8081 -d -e PDNS_ALLOW_AXFR_IPS=127.0.0.1 -e PDNS_DISTRIBUTOR_THREADS=3 -e PDNS_CACHE_TTL=20 -e PDNS_RECURSIVE_CACHE_TTL=10 -e DB_ENV_MYSQL_ROOT_PASSWORD=changeme -e PDNS_ZONE="${var.base_domain}" quay.io/nicholas_lane/pdns:4.0-1
+ExecStart=/usr/bin/docker run --name pdns-master --link mysql:db -p 53:53/udp -p 53:53 -p 8081:8081 -d -e PDNS_RECURSOR=10.0.0.2 -e PDNS_SOA=10.0.0.2 -e PDNS_ALLOW_AXFR_IPS=127.0.0.1 -e PDNS_DISTRIBUTOR_THREADS=3 -e PDNS_CACHE_TTL=20 -e PDNS_RECURSIVE_CACHE_TTL=10 -e DB_ENV_MYSQL_ROOT_PASSWORD=changeme -e PDNS_ZONE="${var.base_domain}" quay.io/nicholas_lane/pdns:4.0-1
 ExecStartPost=-/home/core/createzone "${var.base_domain}"
 
 ExecStopPost=/usr/bin/docker kill mysql

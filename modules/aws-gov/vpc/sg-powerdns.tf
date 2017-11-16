@@ -67,6 +67,7 @@ resource "aws_security_group_rule" "powerdns_ingress_api" {
   from_port   = 8081
   to_port     = 8081
 }
+
 resource "aws_security_group_rule" "powerdns_ingress_dns" {
   type              = "ingress"
   security_group_id = "${aws_security_group.powerdns.id}"
@@ -77,6 +78,15 @@ resource "aws_security_group_rule" "powerdns_ingress_dns" {
   to_port     = 53
 }
 
+resource "aws_security_group_rule" "powerdns_ingress_dns_udp" {
+  type              = "ingress"
+  security_group_id = "${aws_security_group.powerdns.id}"
+
+  protocol    = "udp"
+  cidr_blocks = ["0.0.0.0/0"]
+  from_port   = 53
+  to_port     = 53
+}
 
 resource "aws_security_group_rule" "powerdns_ingress_heapster" {
   type              = "ingress"
