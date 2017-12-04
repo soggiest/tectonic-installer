@@ -22,6 +22,25 @@ data "aws_ami" "coreos_ami" {
   }
 }
 
+resource "aws_db_subnet_group" "mysql" {
+  name        = "mysql_subnet_group"
+  description = "DB Subnet Group"
+  subnet_ids  = ["${var.subnets}"]
+}
+
+resource "aws_db_instance" "mysql" {
+  allocated_storage      = 50
+  storage_type           = "gp2"
+  engine                 = "mysql"
+  engine_version         = "5.7.17"
+  instance_class         = "db.t2.large"
+  name                   = "db_create"
+  username               = "root"
+  password               = "powerdns"
+  db_subnet_group_name   = "mysql_subnet_group"
+  vpc_security_group_ids = ["${var.sg_ids}"]
+}
+
 resource "aws_instance" "powerdns_node" {
   count = "1"
   ami   = "${data.aws_ami.coreos_ami.image_id}"
@@ -56,15 +75,5 @@ resource "aws_instance" "powerdns_node" {
     "kubernetes.io/cluster/${var.cluster_name}", "owned",
     "tectonicClusterID", "${var.cluster_id}"
   ), var.extra_tags)}"
-
-#  provisioner "file" {
-#    source = "resources/pdns-4.0-1.tar.gz"
-#    destination = "/tmp/pdns-4.0-1.tar.gz"
-#  }
-#
-#  provisioner "file" {
-#    source = "resources/mysql.tar.gz"
-#    destination = "/tmp/mysql.tar.gz"
-#  }
 
 }

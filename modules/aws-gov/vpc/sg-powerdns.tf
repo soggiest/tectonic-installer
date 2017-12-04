@@ -207,3 +207,13 @@ resource "aws_security_group_rule" "powerdns_ingress_services_from_console" {
   from_port = 30000
   to_port   = 32767
 }
+
+resource "aws_security_group_rule" "powerdns_mysql" {
+  type                     = "ingress"
+  security_group_id        = "${aws_security_group.powerdns.id}"
+
+  protocol  = "tcp"
+  from_port = 3306
+  to_port   = 3306
+  self      = true
+} 
