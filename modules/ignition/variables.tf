@@ -66,3 +66,8 @@ variable "tectonic_vanilla_k8s" {
 If set to true, a vanilla Kubernetes cluster will be deployed, omitting any Tectonic assets.
 EOF
 }
+
+variable "quay_hostname" {
+  type    = "string"
+  default = ""
+}

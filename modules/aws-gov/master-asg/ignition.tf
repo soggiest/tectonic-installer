@@ -6,6 +6,7 @@ data "ignition_config" "main" {
     "${var.ign_max_user_watches_id}",
     "${var.ign_s3_puller_id}",
     "${data.ignition_file.node_resolv.id}",
+#    "${data.ignition_file.repository_cert.id}",
   ]
 
   systemd = ["${compact(list(
@@ -45,16 +46,27 @@ data "ignition_file" "node_resolv" {
   }
 }
 
+#data "ignition_file" "repository_cert" {
+#  count      = "${var.quay_cert_path == "" ? 0 : 1}"
+#  path       = "/etc/ssl/certs/custom-repository-ca.pem"
+#  mode       = 0644
+#  filesystem = "root"
+#
+#  content {
+#    content = "${file(var.quay_cert_path)}"
+#  }
+#}
+
 
 data "template_file" "init_assets" {
   template = "${file("${path.module}/resources/init-assets.sh")}"
 
   vars {
     cluster_name       = "${var.cluster_name}"
-    awscli_image       = "${var.container_images["awscli"]}"
+    awscli_image       = "${var.quay_hostname}${var.container_images["awscli"]}"
     assets_s3_location = "${var.assets_s3_location}"
-    kubelet_image_url  = "${replace(var.container_images["hyperkube"],var.image_re,"$1")}"
-    kubelet_image_tag  = "${replace(var.container_images["hyperkube"],var.image_re,"$2")}"
+    kubelet_image_url  = "${var.quay_hostname}${replace(var.container_images["hyperkube"],var.image_re,"$1")}"
+    kubelet_image_tag  = "${var.quay_hostname}${replace(var.container_images["hyperkube"],var.image_re,"$2")}"
   }
 }
 

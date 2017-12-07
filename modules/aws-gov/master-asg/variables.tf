@@ -146,3 +146,18 @@ variable "ign_tectonic_service_id" {
 variable "ign_tectonic_path_unit_id" {
   type = "string"
 }
+
+variable "quay_hostname" {
+  type    = "string"
+  default = ""
+}
+
+variable "quay_cert_path" {
+  type    = "string"
+  default = ""
+}
+
+variable "quay_key_path" {
+  type    = "string"
+  default = ""
+}

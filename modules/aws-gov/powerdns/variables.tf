@@ -96,3 +96,17 @@ variable "external_dns" {
   type        = "string"
 }
 
+variable "quay_hostname" {
+  type        = "string"
+  default     = "quay.io"
+}
+
+variable "quay_cert_path" {
+  type    = "string"
+  default = ""
+}
+
+variable "quay_key_path" {
+  type    = "string"
+  default = ""
+}

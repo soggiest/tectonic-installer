@@ -4,6 +4,7 @@ data "ignition_config" "main" {
     "${var.ign_installer_kubelet_env_id}",
     "${var.ign_max_user_watches_id}",
     "${var.ign_s3_puller_id}",
+#    "${data.ignition_file.repository_cert.id}",
   ]
 
   systemd = [
@@ -28,4 +29,14 @@ data "ignition_file" "node_resolv" {
   }
 }
 
-
+#data "ignition_file" "repository_cert" {
+#  count      = "${var.quay_cert_path == "" ? 0 : 1}"
+#  path       = "/etc/ssl/certs/custom-repository-ca.pem"
+#  mode       = 0644
+#  filesystem = "root"
+#
+#  content {
+#    content = "${file(var.quay_cert_path)}"
+#  }
+#}
+#

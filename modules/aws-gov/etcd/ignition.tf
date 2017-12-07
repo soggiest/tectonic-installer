@@ -11,6 +11,7 @@ data "ignition_config" "etcd" {
     "${data.ignition_file.node_hostname.*.id[count.index]}",
     "${data.ignition_file.etcd_tls_zip.id}",
     "${data.ignition_file.node_resolv.id}",
+#    "${data.ignition_file.repository_cert.id}",
   ]
 }
 
@@ -39,6 +40,17 @@ data "ignition_file" "node_hostname" {
   }
 }
 
+#data "ignition_file" "repository_cert" {
+#  count      = "${var.quay_cert_path == "" ? 0 : 1}"
+#  path       = "/etc/ssl/certs/custom-repository-ca.zip"
+#  mode       = 0644
+#  filesystem = "root"
+#
+#  content {
+#    content = "${file(var.quay_cert_path)}"
+#  }
+#}
+
 data "ignition_file" "etcd_tls_zip" {
   path       = "/etc/ssl/etcd/tls.zip"
   mode       = 0400
@@ -62,6 +74,7 @@ ConditionPathExists=!/etc/ssl/etcd/ca.crt
 [Service]
 Type=oneshot
 WorkingDirectory=/etc/ssl/etcd
+ExecStartPre=-/usr/bin/bash -c 'unzip /etc/ssl/certs/custom-repository-ca.zip'
 ExecStart=/usr/bin/bash -c 'unzip /etc/ssl/etcd/tls.zip && \
 chown etcd:etcd /etc/ssl/etcd/peer.* && \
 chown etcd:etcd /etc/ssl/etcd/server.* && \

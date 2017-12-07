@@ -152,3 +152,8 @@ variable "identity_client_cert_pem" {
 variable "identity_client_key_pem" {
   type = "string"
 }
+
+variable "quay_hostname" {
+  type    = "string"
+  default = ""
+}

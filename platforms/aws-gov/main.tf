@@ -28,7 +28,7 @@ module "etcd" {
 
   ssh_key         = "${var.tectonic_aws_ssh_key}"
   cl_channel      = "${var.tectonic_cl_channel}"
-  container_image = "${var.tectonic_container_images["etcd"]}"
+  container_image = "${var.quay_hostname == "" ? "quay.io" : var.quay_hostname}${var.tectonic_container_images["etcd"]}"
 
   subnets = "${data.terraform_remote_state.powerdns.worker_subnet_ids}"
 
@@ -50,6 +50,10 @@ module "etcd" {
   tls_enabled = "${var.tectonic_etcd_tls_enabled}"
 
   tls_zip = "${module.etcd_certs.etcd_tls_zip}"
+  quay_hostname      = "${var.quay_hostname}"
+  quay_cert_path     = "${pathexpand(var.quay_cert_path)}"
+  quay_key_path      = "${pathexpand(var.quay_key_path)}"
+
 }
 
 module "ignition_masters" {
@@ -65,6 +69,7 @@ module "ignition_masters" {
   kubelet_node_label   = "node-role.kubernetes.io/master"
   kubelet_node_taints  = "node-role.kubernetes.io/master=:NoSchedule"
   tectonic_vanilla_k8s = "${var.tectonic_vanilla_k8s}"
+  quay_hostname        = "${var.quay_hostname}"
 }
 
 module "masters" {
@@ -107,6 +112,10 @@ module "masters" {
   ign_s3_puller_id                  = "${module.ignition_masters.s3_puller_id}"
   ign_tectonic_path_unit_id         = "${var.tectonic_vanilla_k8s ? "" : module.tectonic.systemd_path_unit_id}"
   ign_tectonic_service_id           = "${module.tectonic.systemd_service_id}"
+  quay_hostname      = "${var.quay_hostname}"
+  quay_cert_path     = "${pathexpand(var.quay_cert_path)}"
+  quay_key_path      = "${pathexpand(var.quay_key_path)}"
+
 }
 
 module "ignition_workers" {
@@ -151,4 +160,8 @@ module "workers" {
   ign_locksmithd_service_id         = "${module.ignition_masters.locksmithd_service_id}"
   ign_max_user_watches_id           = "${module.ignition_workers.max_user_watches_id}"
   ign_s3_puller_id                  = "${module.ignition_workers.s3_puller_id}"
+  quay_hostname      = "${var.quay_hostname}"
+  quay_cert_path     = "${pathexpand(var.quay_cert_path)}"
+  quay_key_path      = "${pathexpand(var.quay_key_path)}"
+
 }

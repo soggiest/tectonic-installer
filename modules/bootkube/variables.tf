@@ -158,3 +158,8 @@ variable "versions" {
   description = "Container versions to use"
   type        = "map"
 }
+
+variable "quay_hostname" {
+  type    = "string"
+  default = ""
+}

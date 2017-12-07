@@ -293,4 +293,18 @@ Example:
 EOF
 }
 
+variable "quay_hostname" {
+  type    = "string"
+  default = ""
+}
+
+variable "quay_cert_path" {
+  type    = "string"
+  default = ""
+}
+
+variable "quay_key_path" {
+  type    = "string"
+  default = ""
+}
 

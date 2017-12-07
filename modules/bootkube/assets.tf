@@ -4,9 +4,9 @@ resource "template_dir" "experimental" {
   destination_dir = "./generated/experimental"
 
   vars {
-    etcd_operator_image = "${var.container_images["etcd_operator"]}"
+    etcd_operator_image = "${var.quay_hostname}${var.container_images["etcd_operator"]}"
     etcd_service_ip     = "${cidrhost(var.service_cidr, 15)}"
-    kenc_image          = "${var.container_images["kenc"]}"
+    kenc_image          = "${var.quay_hostname}${var.container_images["kenc"]}"
 
     etcd_ca_cert = "${base64encode(var.etcd_ca_cert_pem)}"
 
@@ -27,7 +27,7 @@ resource "template_dir" "bootstrap_experimental" {
   destination_dir = "./generated/bootstrap-experimental"
 
   vars {
-    etcd_image                = "${var.container_images["etcd"]}"
+    etcd_image                = "${var.quay_hostname}${var.container_images["etcd"]}"
     etcd_version              = "${var.versions["etcd"]}"
     bootstrap_etcd_service_ip = "${cidrhost(var.service_cidr, 20)}"
   }
@@ -50,11 +50,11 @@ resource "template_dir" "bootkube" {
   destination_dir = "./generated/manifests"
 
   vars {
-    hyperkube_image        = "${var.container_images["hyperkube"]}"
-    pod_checkpointer_image = "${var.container_images["pod_checkpointer"]}"
-    kubedns_image          = "${var.container_images["kubedns"]}"
-    kubednsmasq_image      = "${var.container_images["kubednsmasq"]}"
-    kubedns_sidecar_image  = "${var.container_images["kubedns_sidecar"]}"
+    hyperkube_image        = "${var.quay_hostname}${var.container_images["hyperkube"]}"
+    pod_checkpointer_image = "${var.quay_hostname}${var.container_images["pod_checkpointer"]}"
+    kubedns_image          = "${var.quay_hostname}${var.container_images["kubedns"]}"
+    kubednsmasq_image      = "${var.quay_hostname}${var.container_images["kubednsmasq"]}"
+    kubedns_sidecar_image  = "${var.quay_hostname}${var.container_images["kubedns_sidecar"]}"
 
     # Choose the etcd endpoints to use.
     # 1. If experimental mode is enabled (self-hosted etcd), then use
@@ -118,8 +118,8 @@ resource "template_dir" "bootkube_bootstrap" {
   destination_dir = "./generated/bootstrap-manifests"
 
   vars {
-    hyperkube_image = "${var.container_images["hyperkube"]}"
-    etcd_image      = "${var.container_images["etcd"]}"
+    hyperkube_image = "${var.quay_hostname}${var.container_images["hyperkube"]}"
+    etcd_image      = "${var.quay_hostname}${var.container_images["etcd"]}"
 
     etcd_servers = "${
       var.experimental_enabled
@@ -166,7 +166,7 @@ data "template_file" "bootkube_sh" {
   template = "${file("${path.module}/resources/bootkube.sh")}"
 
   vars {
-    bootkube_image = "${var.container_images["bootkube"]}"
+    bootkube_image = "${var.quay_hostname}${var.container_images["bootkube"]}"
   }
 }
 
