@@ -311,3 +311,7 @@ variable "external_dns" {
   default = "false"
 }
 
+variable "aws_dns_server" {
+  description = "AWS DNS server associated with your VPC CIDR. The AWS DNS Server will be the third (N    etwork ID being the first) IP address in your VPC CIDR range. Ex: For CIDR 10.0.0.0/24 the AWS DNS Ser    ver will be 10.0.0.2"
+  type        = "string"
+}

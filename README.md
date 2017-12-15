@@ -58,6 +58,31 @@ The [latest Terraform binary](https://www.terraform.io/downloads.html) may not a
 
 The [Yarn](https://yarnpkg.com) JavaScript package manager is required for building the frontend code. On OS X, install using Homebrew: `brew install yarn`.
 
+#### GovCloud usage
+
+To install Tectonic into the GovCloud follow the steps below.
+
+Follow the steps in `Initiate the Cluster Configuration` below, however use `PLATFORM=aws-gov` as the platform variable.
+
+Modify the `terraform.tfvars` created by the command created above located in the `build/<CLUSTER NAME>/` directory. If you are not using Route53 in GovCloud you will need to enter values for `external_dns` and `aws_dns_server` variables.
+
+Create a directory under the `build` directory named `dns-create`. 
+
+Inside `build/dns-cerate` copy the `terraform.tfvars` file created above.
+
+Run the following command to set up your GovCloud VPC and a private DNS server
+
+`terraform init ../../platforms/aws-gov`
+
+`terraform plan ../../platforms/aws-gov`
+
+`terraform apply ../../platforms/aws-gov`
+
+After these steps have completed succesfully run the same three commands in the `build/<CLUSTER NAME>` directory.
+
+**IMPORTANT** You will need a copy of your Tectonic License and your Quay Pull secret located inside the `build/<CLUSTER NAME>` directory.
+
+
 #### Common Usage
 
 **Choose your platform**

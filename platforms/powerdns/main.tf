@@ -73,5 +73,6 @@ module "dns" {
   ssh_key            = "${var.tectonic_aws_ssh_key}"
   subnets            = "${module.vpc.master_subnet_ids}"
   external_dns       = "${var.external_dns}"
+  aws_dns_server     = "${var.aws_dns_server}"
 }
 

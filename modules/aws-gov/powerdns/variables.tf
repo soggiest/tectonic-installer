@@ -93,6 +93,11 @@ variable "worker_iam_role" {
 }
 
 variable "external_dns" {
+  description = "Enables public Elastic IPs for the PowerDNS server"
   type        = "string"
 }
 
+variable "aws_dns_server" {
+  description = "AWS DNS server associated with your VPC CIDR. The AWS DNS Server will be the third (Network ID being the first) IP address in your VPC CIDR range. Ex: For CIDR 10.0.0.0/24 the AWS DNS Server will be 10.0.0.2"
+  type        = "string"
+}
